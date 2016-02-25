@@ -51,4 +51,6 @@ handler = function()
 end
 
 srv.GET("/:app", handler)
-srv.GET("/:app/*args", handler) 
+srv.GET("/:app/*args", handler)
+
+print("CApptain loaded up.")
