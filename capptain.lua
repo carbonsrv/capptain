@@ -3,6 +3,8 @@
 -- Capptain!
 -- Hosts small apps.
 
+kvstore.set("capptain:appdir", arg[1] or "./apps")
+
 srv.GET("/", mw.new(function()
 	local apps = io.list("./apps")
 	local list = {}
@@ -28,7 +30,7 @@ handler = function()
 	local apps = io.list("./apps")
 	for k, v in pairs(apps) do
 		if v == app..".lua" then
-			local suc, res, code, ctype = pcall(dofile, "./apps/"..app..".lua")
+			local suc, res, code, ctype = pcall(dofile, kvstore.get("capptain:appdir") .. "/"..app..".lua")
 			if not suc then
 				content(doctype()(
 					tag"head"(
