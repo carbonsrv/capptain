@@ -6,7 +6,7 @@
 kvstore.set("capptain:appdir", arg[1] or "./apps")
 
 srv.GET("/", mw.new(function()
-	local apps = io.list("./apps")
+	local apps = (fs.list or io.list)("./apps")
 	local list = {}
 	for _, app in pairs(apps) do
 		local appname = app:gsub("%.lua$", "")
@@ -27,7 +27,7 @@ end, {page=mainpage}))
 
 handler = function()
 	local app = params("app")
-	local apps = io.list("./apps")
+	local apps = (fs.list or io.list)("./apps")
 	for k, v in pairs(apps) do
 		if v == app..".lua" then
 			local suc, res, code, ctype = pcall(dofile, kvstore.get("capptain:appdir") .. "/"..app..".lua")
