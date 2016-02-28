@@ -3,10 +3,10 @@
 -- Capptain!
 -- Hosts small apps.
 
-kvstore.set("capptain:appdir", arg[1] or "./apps")
+kvstore.set("capptain:appdir", arg[1] or "apps")
 
 srv.GET("/", mw.new(function()
-	local apps = (fs.list or io.list)("./apps")
+	local apps = (fs.list or io.list)(kvstore.get("capptain:appdir"))
 	local list = {}
 	for _, app in pairs(apps) do
 		local appname = app:gsub("%.lua$", "")
@@ -27,17 +27,29 @@ end, {page=mainpage}))
 
 handler = function()
 	local app = params("app")
-	local apps = (fs.list or io.list)("./apps")
+	local apps = (fs.list or io.list)(kvstore.get("capptain:appdir"))
 	for k, v in pairs(apps) do
 		if v == app..".lua" then
-			local suc, res, code, ctype = pcall(dofile, kvstore.get("capptain:appdir") .. "/"..app..".lua")
+			local suc, res, code, ctype
+			if fs.readfile then
+				local src = fs.readfile(kvstore.get("capptain:appdir") .. "/"..app..".lua")
+				local f, err = loadstring(src)
+				if f then
+					suc, res, code, ctype = pcall(f)
+				else
+					suc = false
+					res = err
+				end
+			else
+				local suc, res, code, ctype = pcall(dofile, kvstore.get("capptain:appdir") .. "/"..app..".lua")
+			end
 			if not suc then
 				content(doctype()(
 					tag"head"(
-						tag"title" "Error in App "..app
+						tag"title"("Error in App "..app)
 					),
 					tag"body"(
-						tag"h1" "Error in App "..app,
+						tag"h1"("Error in App "..app),
 						res
 					)
 				))
