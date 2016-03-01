@@ -31,7 +31,6 @@ end, {page=mainpage}))
 
 handler = function()
 	local app = params("app")
-	path = "/" .. app .. (params("args") or "")
 	local app_path = kvstore.get("capptain:appdir") .. "/" .. app .. ".lua"
 	if (fs.exists or os.exists)(app_path) then
 		local suc, res, code, ctype
