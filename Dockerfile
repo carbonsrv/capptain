@@ -14,5 +14,5 @@ WORKDIR /apps
 COPY . /capptain
 
 # Run cobalt
-ENTRYPOINT ["/usr/bin/carbon", "-root=/capptain", "-config=/capptain/capptain.conf", "/capptain/capptain.lua"]
-CMD ["/apps"]
+ENTRYPOINT ["/usr/bin/carbon", "-root=/apps", "/capptain/capptain.lua"]
+CMD ["/"]

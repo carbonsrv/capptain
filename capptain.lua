@@ -3,15 +3,19 @@
 -- Capptain!
 -- Hosts small apps.
 
-kvstore.set("capptain:appdir", arg[1] or "apps")
+local appdir = arg[1] or "apps"
+kvstore.set("capptain:appdir", appdir)
+os.chdir(appdir)
 
 srv.GET("/", mw.new(function()
 	local apps = (fs.list or io.list)(kvstore.get("capptain:appdir"))
 	local list = {}
 	for _, app in pairs(apps) do
-		local appname = app:gsub("%.lua$", "")
-		table.insert(list, tag"a"[{href=appname}](appname))
-		table.insert(list, tag"br")
+		if app:sub(1, 1) ~= "." and app:match("%.lua$") then
+			local appname = app:gsub("%.lua$", "")
+			table.insert(list, tag"a"[{href=appname}](appname))
+			table.insert(list, tag"br")
+		end
 	end
 	content(doctype()(
 		tag"head"(
@@ -27,44 +31,58 @@ end, {page=mainpage}))
 
 handler = function()
 	local app = params("app")
-	local apps = (fs.list or io.list)(kvstore.get("capptain:appdir"))
-	for k, v in pairs(apps) do
-		if v == app..".lua" then
-			local suc, res, code, ctype
-			if fs.readfile then
-				local src = fs.readfile(kvstore.get("capptain:appdir") .. "/"..app..".lua")
-				local f, err = loadstring(src)
-				if f then
-					suc, res, code, ctype = pcall(f)
-				else
-					suc = false
-					res = err
-				end
+	path = "/" .. app .. (params("args") or "")
+	local app_path = kvstore.get("capptain:appdir") .. "/" .. app .. ".lua"
+	if (fs.exists or os.exists)(app_path) then
+		local suc, res, code, ctype
+		if fs.readfile then
+			local src = fs.readfile(app_path)
+			local f, err = loadstring(src)
+			if f then
+				suc, res, code, ctype = pcall(f)
 			else
-				local suc, res, code, ctype = pcall(dofile, kvstore.get("capptain:appdir") .. "/"..app..".lua")
+				suc = false
+				res = err
 			end
-			if not suc then
-				content(doctype()(
-					tag"head"(
-						tag"title"("Error in App "..app)
-					),
-					tag"body"(
-						tag"h1"("Error in App "..app),
-						res
-					)
-				))
-			else
-				if res then
-					content(res, code, ctype)
-				end
-			end
-			return
+		else
+			local suc, res, code, ctype = pcall(dofile, app_path)
 		end
+		if not suc then
+			content(doctype()(
+				tag"head"(
+					tag"title"("Error in App "..app)
+				),
+				tag"body"(
+					tag"h1"("Error in App "..app),
+					tag"pre"(res)
+				)
+			))
+		else
+			if res then
+				content(res, code, ctype)
+			end
+		end
+		return
 	end
 	content("No such app.", 404)
 end
 
 srv.GET("/:app", handler)
 srv.GET("/:app/*args", handler)
+
+if (fs.exists or os.exists)(appdir.."/.capptain_autoexec.lua") then
+	print("Executing CApptain autoexec...")
+	if fs.exists then
+		local src = fs.readfile(appdir.."/.capptain_autoexec.lua")
+		local f, err = loadstring(src)
+		if f then
+			f()
+		else
+			error(err, 0)
+		end
+	else
+		dofile(os.pwd().."/.capptain_autoexec.lua")
+	end
+end
 
 print("CApptain loaded up.")
