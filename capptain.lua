@@ -5,7 +5,6 @@
 
 local appdir = arg[1] or "apps"
 kvstore.set("capptain:appdir", appdir)
-os.chdir(appdir)
 
 srv.GET("/", mw.new(function()
 	local apps = (fs.list or io.list)(kvstore.get("capptain:appdir"))
