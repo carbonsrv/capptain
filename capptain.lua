@@ -67,6 +67,8 @@ end
 
 srv.GET("/:app", handler)
 srv.GET("/:app/*args", handler)
+srv.POST("/:app", handler)
+srv.POST("/:app/*args", handler)
 
 if (fs.exists or os.exists)(appdir.."/.capptain_autoexec.lua") then
 	print("Executing CApptain autoexec...")
