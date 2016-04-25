@@ -54,7 +54,7 @@ handler = function()
 					tag"h1"("Error in App "..app),
 					tag"pre"(res)
 				)
-			))
+			), 500)
 		else
 			if res then
 				content(res, code, ctype)
